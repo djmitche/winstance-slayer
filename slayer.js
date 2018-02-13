@@ -3,6 +3,7 @@ const fs = require('fs');
 const taskcluster = require('taskcluster-client');
 
 const WORKERTYPE_PATTERN = process.env.WORKERTYPE_PATTERN;
+const ACTION = process.env.ACTION;
 
 async function fixRegion(region) {
   let lastcall = new Date();
@@ -65,12 +66,13 @@ async function fixRegion(region) {
     InstanceIds: toKill
   };
 
+  const method = `${ACTION}Instances`;
   if (process.env.DRY_RUN) {
-    console.log(`This is a dry, but would have run "new aws.EC2({region: '${region}'}).rebootInstance(${JSON.stringify(params)});"`);
+    console.log(`This is a dry, but would have run "new aws.EC2({region: '${region}'}).${method}(${JSON.stringify(params)});"`);
     return {dry_run_would_kill: toKill};
   } else {
-    let response = await ec2.rebootInstances(params).promise();
-    console.log('finished reboting in ' + region);
+    let response = await ec2[method](params).promise();
+    console.log(`finished calling ${method} in ${region}`);
     console.log('aws said: ' + JSON.stringify(response, null, 2));
     return {killed: toKill};
   }
@@ -87,6 +89,11 @@ async function main() {
 
   if (!WORKERTYPE_PATTERN) {
     console.log('specify WORKERTYPE_PATTERN');
+    process.exit(1);
+  }
+
+  if (ACTION !== 'reboot' && ACTION !== 'terminate') {
+    console.log('specify ACTION as one of "reboot" or "terminate"');
     process.exit(1);
   }
 
