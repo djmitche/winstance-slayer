@@ -1,0 +1,13 @@
+{
+  "name": "winstance-slayer",
+  "version": "1.0.0",
+  "description": "kills bad windows instances",
+  "main": "slayer.js",
+  "repository": "https://github.com/djmitche/winstance-slayer",
+  "author": "Rob Thijssen <grenade@mozilla.com>",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "aws-sdk": "^2.193.0",
+    "taskcluster-client": "^3.2.1"
+  }
+}
