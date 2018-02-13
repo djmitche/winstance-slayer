@@ -2,7 +2,7 @@ const aws = require('aws-sdk');
 const fs = require('fs');
 const taskcluster = require('taskcluster-client');
 
-const PATTERN = '*gecko*win*';
+const WORKERTYPE_PATTERN = process.env.WORKERTYPE_PATTERN;
 
 async function fixRegion(region) {
   let lastcall = new Date();
@@ -38,7 +38,7 @@ async function fixRegion(region) {
     InstanceIds: impairedInstanceIds,
     Filters: [
       {Name: 'tag:Owner', Values: ['ec2-manager-production', 'aws-provisioner-v1-managed']},
-      {Name: 'tag:Name', Values: [PATTERN]},
+      {Name: 'tag:Name', Values: [WORKERTYPE_PATTERN]},
     ],
   }).promise();
 
@@ -57,7 +57,7 @@ async function fixRegion(region) {
   }
 
   if (toKill.length === 0) {
-    console.log('no impaired instances which match the glob "' + PATTERN + '" in ' + region);
+    console.log('no impaired instances which match the glob "' + WORKERTYPE_PATTERN + '" in ' + region);
     return;
   }
 
@@ -83,6 +83,11 @@ async function main() {
     const creds = await secrets.get('project/releng/winstance-slayer/aws-creds');
     process.env.AWS_ACCESS_KEY_ID = creds.secret.AWS_ACCESS_KEY_ID;
     process.env.AWS_SECRET_ACCESS_KEY = creds.secret.AWS_SECRET_ACCESS_KEY;
+  }
+
+  if (!WORKERTYPE_PATTERN) {
+    console.log('specify WORKERTYPE_PATTERN');
+    process.exit(1);
   }
 
   try {
