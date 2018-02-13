@@ -118,4 +118,9 @@ async function main() {
   }
 }
 
-main().then(x=>{}, console.error);
+main().then(
+  ()=>{},
+  err => {
+    console.error(err);
+    process.exit(1);
+  });
