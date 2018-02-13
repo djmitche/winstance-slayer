@@ -78,8 +78,11 @@ async function fixRegion(region) {
 
 async function main() {
   if (!process.env.AWS_ACCESS_KEY) {
-    console.log('no access credentials provided');
-    process.exit(1); // TODO
+    console.log('no access credentials provided; trying to fetch from http://taskcluster');
+    const secrets = new Taskcluster.Secrets({baseUrl: 'http://taskcluster/secrets/v1'});
+    const creds = await secrets.get('project/releng/winstance-slayer/aws-creds');
+    process.env.AWS_ACCESS_KEY_ID = creds.secret.AWS_ACCESS_KEY_ID;
+    process.env.AWS_SECRET_ACCESS_KEY = creds.secret.AWS_SECRET_ACCESS_KEY;
   }
 
   try {
